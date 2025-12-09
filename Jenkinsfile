@@ -5,7 +5,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USER   = 'YOUR_DOCKER_USER'   // TODO: แก้
+        DOCKER_USER   = 'lattapon2540'   // TODO: แก้
         IMAGE_NAME    = "${DOCKER_USER}/weather-fake-service"
         MANIFEST_REPO = 'https://github.com/ltpzxgit/weather-manifests.git' // TODO: แก้ถ้าชื่อไม่ตรง
         MANIFEST_DIR  = 'manifests'
