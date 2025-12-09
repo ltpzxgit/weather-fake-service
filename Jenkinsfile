@@ -14,7 +14,7 @@ pipeline {
             steps {
                 checkout scm
                 script {
-                    IMAGE_TAG = sh(
+                    env.IMAGE_TAG = sh(
                         script: 'git rev-parse --short HEAD',
                         returnStdout: true
                     ).trim()
@@ -38,8 +38,10 @@ pipeline {
                     sh '''
                       echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER_NAME" --password-stdin
 
-                      docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                      docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                      echo "Building image $IMAGE_NAME:$IMAGE_TAG"
+
+                      docker build -t $IMAGE_NAME:$IMAGE_TAG .
+                      docker push $IMAGE_NAME:$IMAGE_TAG
 
                       docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
                       docker push ${IMAGE_NAME}:latest
