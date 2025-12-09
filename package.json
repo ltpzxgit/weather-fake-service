@@ -1,0 +1,14 @@
+{
+  "name": "weather-fake-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  "start": "node server.js",
+  "test": "echo \"No tests yet\" && exit 0"
+},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
