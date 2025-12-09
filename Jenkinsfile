@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USER   = 'lattapon2540'                   // <-- แก้
+        DOCKER_USER   = 'lattapon2540'   // <-- แก้เป็น user docker hub จริง
         IMAGE_NAME    = "${DOCKER_USER}/weather-fake-service"
-        MANIFEST_REPO = 'https://github.com/ltpzxgit/weather-manifests.git' // <-- แก้
+        MANIFEST_REPO = 'https://github.com/ltpzxgit/weather-manifests.git' // <-- เปลี่ยนให้ตรง
         MANIFEST_DIR  = 'manifests'
         IMAGE_TAG     = ''
     }
@@ -34,13 +34,16 @@ pipeline {
 
         stage('Build & Push Docker Image') {
             steps {
-                script {
-                    docker.withRegistry('', 'dockerhub-creds') {
-                        def img = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
-                        img.push()
-                        // อยาก push latest ด้วยก็ได้
-                        img.push('latest')
-                    }
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER_NAME', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                      echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER_NAME" --password-stdin
+
+                      docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                      docker push ${IMAGE_NAME}:${IMAGE_TAG}
+
+                      docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+                      docker push ${IMAGE_NAME}:latest
+                    '''
                 }
             }
         }
