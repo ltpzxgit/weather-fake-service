@@ -1,12 +1,14 @@
+// ใช้ตัวแปร Groovy เก็บ tag (ไม่ไปยุ่งกับ env)
+def IMAGE_TAG = ""
+
 pipeline {
     agent any
 
     environment {
-        DOCKER_USER   = 'lattapon2540'   // <-- แก้เป็น user docker hub จริง
+        DOCKER_USER   = 'YOUR_DOCKER_USER'   // TODO: แก้
         IMAGE_NAME    = "${DOCKER_USER}/weather-fake-service"
-        MANIFEST_REPO = 'https://github.com/ltpzxgit/weather-manifests.git' // <-- เปลี่ยนให้ตรง
+        MANIFEST_REPO = 'https://github.com/ltpzxgit/weather-manifests.git' // TODO: แก้ถ้าชื่อไม่ตรง
         MANIFEST_DIR  = 'manifests'
-        IMAGE_TAG     = ''
     }
 
     stages {
@@ -14,7 +16,7 @@ pipeline {
             steps {
                 checkout scm
                 script {
-                    env.IMAGE_TAG = sh(
+                    IMAGE_TAG = sh(
                         script: 'git rev-parse --short HEAD',
                         returnStdout: true
                     ).trim()
@@ -35,17 +37,17 @@ pipeline {
         stage('Build & Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER_NAME', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                      echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER_NAME" --password-stdin
+                    sh """
+                      echo "\$DOCKER_PASS" | docker login -u "\$DOCKER_USER_NAME" --password-stdin
 
-                      echo "Building image $IMAGE_NAME:$IMAGE_TAG"
+                      echo "Building image ${IMAGE_NAME}:${IMAGE_TAG}"
 
-                      docker build -t $IMAGE_NAME:$IMAGE_TAG .
-                      docker push $IMAGE_NAME:$IMAGE_TAG
+                      docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                      docker push ${IMAGE_NAME}:${IMAGE_TAG}
 
                       docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
                       docker push ${IMAGE_NAME}:latest
-                    '''
+                    """
                 }
             }
         }
@@ -55,6 +57,7 @@ pipeline {
                 dir(MANIFEST_DIR) {
                     deleteDir()
                 }
+
                 withCredentials([usernamePassword(credentialsId: 'github-creds', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
                     sh """
                       git clone https://${GIT_USER}:${GIT_TOKEN}@${MANIFEST_REPO.replace('https://', '')} ${MANIFEST_DIR}
